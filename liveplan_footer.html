@@ -1,0 +1,573 @@
+window.U = window.U || {};
+(function() {
+    var current = 'big';
+    var fadedLayer = $('.faded-layer');
+    var menuDelay = 200; //Delay for menu animations
+	var delay = 300;
+	var open = false;
+	var scrollSpot = 50;
+	var $headerEl = $('header .header');
+
+	var header = {
+		$preHeaderEl: $('.preheader'),
+		$logoEl: $headerEl.find('.logo'),
+		$logoImageEl: $headerEl.find('.logo img'),
+		$ulEl: $headerEl.find('ul'),
+		$liEl: $headerEl.find('li'),
+		$aEl: $headerEl.find('ul li a'),
+		$contactLinkEl: $headerEl.find('.contact-link'),
+		$loginEl: $headerEl.find('.login'),
+		$signupEl: $headerEl.find('.signup'),
+
+		//Collapsed nav bar
+		smallHeader: function(delay) {
+
+			//General
+			$headerEl.animate({height: '52px'}, delay);
+			header.$preHeaderEl.slideUp(delay);
+
+			//Logo
+			header.$logoEl.animate({marginRight: 27, width: '92px'}, delay);
+			header.$logoImageEl.animate({top: 10}, delay);
+
+			//Navigation
+			header.$liEl.css({'font-size':'14px'});
+			header.$aEl.hover(function(){
+				$(this).css({'background-color':'rgba(249, 249, 249, 0.7)'});
+			}, function(){
+				$(this).css({'background-color':''});
+			});
+			header.$contactLinkEl.css({'display':'block'});
+			header.$liEl.animate({lineHeight: "49px"}, delay);
+
+			//Signup & Login
+			header.$loginEl.animate({padding: '4px 10px'}, delay);
+			header.$signupEl.animate({padding: '4px 10px'}, delay);
+		},
+
+		//Normal sized nav bar
+		bigHeader: function(delay) {
+
+			//General
+			$headerEl.animate({height: '69px'}, delay);
+			header.$preHeaderEl.slideDown(delay);
+
+			//Logo
+			if($(window).width() >= 1199){
+				header.$logoEl.animate({marginRight: 54, width: '140px'}, delay, '', function(){
+					header.$logoEl.css({'margin-right':''});
+				});
+			}else{
+				header.$logoEl.animate({marginRight: 27, width: '140px'}, delay, '', function(){
+					header.$logoEl.css({'margin-right':''});
+				});
+			}
+			header.$logoImageEl.animate({top: 15}, delay);
+
+			//Navigation
+			header.$liEl.css('font-size', '');
+			header.$aEl.hover(function(){
+				$(this).css({'background-color':''});
+			}, function(){
+				$(this).css({'background-color':''});
+			});
+			header.$contactLinkEl.css({'display':''});
+			header.$liEl.animate({lineHeight: "69px"}, delay);
+
+			//Signup & Login
+			header.$loginEl.animate({padding: '7px 15px'}, delay);
+			header.$signupEl.animate({padding: '7px 15px'}, delay);
+		},
+
+		//Resetting of the navbar into normal state, especially during window resizes
+		resetHeader: function() {
+			header.$logoEl.css({'margin-right': '', 'width': ''});
+			header.$loginEl.css({'padding': ''});
+			header.$signupEl.css({'padding': ''});
+			$headerEl.css({'height': ''});
+			header.$preHeaderEl.show();
+			header.$logoImageEl.css({'top': ''});
+			header.$liEl.css('font-size', '');
+			header.$aEl.hover(function(){
+				$(this).css({'background-color':''});
+			}, function(){
+				$(this).css({'background-color':''});
+			});
+			header.$liEl.css({'lineHeight': '69px'});
+		}
+	};
+
+	var delayResize = (function(){
+		var timer = 0;
+		return function(callback, ms){
+			clearTimeout (timer);
+			timer = setTimeout(callback, ms);
+		};
+	})();
+
+	U.smallHeader = header.smallHeader;
+	U.bigHeader = header.bigHeader;
+	U.resetHeader = header.resetHeader;
+	var $ulEl = $headerEl.find('ul');
+	var menuWrapEl = $('#menu-btn-wrap');
+	var $liLoginEl = $headerEl.find('li.menu-login');
+
+	$(window).scroll(function() {
+		if ($(window).scrollTop() > scrollSpot && current == 'big') {
+			if($(window).width() > 991) {
+				U.smallHeader(delay);
+				current = 'small';
+			}
+		} else if ($(window).scrollTop() <= scrollSpot && current == 'small') {
+			U.bigHeader(delay);
+			current = 'big';
+		}
+	});
+
+	//Readjust the header when a user resizes depending on the dimensions
+	$(window).resize(function(){
+		delayResize(function() {
+			if ($(window).width() <= 991) {
+				U.resetHeader();
+				current = 'big';
+			}else{
+				closeMenu();
+			}
+		}, 100);
+	});
+
+	//Open/close menu
+	menuWrapEl.click(function(){
+		toggleMenu();
+	});
+
+	//Close menu if outside of the menu area is clicked
+	fadedLayer.click(function(){
+		closeMenu();
+	});
+
+	//Close menu if esc key is pressed
+	$(document).keyup(function(e) {
+		if (e.keyCode == 27){
+			closeMenu();
+		}
+	});
+
+	//Toggle mobile menu on/off
+	function toggleMenu(){
+		menuWrapEl.find('#menu-btn').toggleClass('open');
+		fadedLayer.toggle();
+
+		if(open == false){
+			$ulEl.toggle();
+			menuWrapEl.css({'border-right':'1px solid #e7e7e7', 'border-bottom':'1px solid #fff'});
+			$liLoginEl.css({'left':'0'});
+			$ulEl.animate({left: 0}, menuDelay);
+			open = true;
+		}else{
+			menuWrapEl.css({'border-right':'', 'border-bottom':''});
+			$liLoginEl.css({'left':''});
+			$ulEl.animate({left: -250}, menuDelay, '', function(){
+				$ulEl.toggle();
+			});
+			open = false;
+		}
+	}
+
+	//Reset the menu to closed state
+	function closeMenu(){
+		//header.$contactLinkEl.css({'display':''});
+		menuWrapEl.find('#menu-btn').removeClass('open'); //reset menu morph icon
+		menuWrapEl.css({'border-right':''});
+		menuWrapEl.css({'border-bottom':''});
+		$ulEl.css({'left': '', 'display':''});
+		fadedLayer.hide();
+		open = false;
+	}
+})();
+
+//BACK TO TOP FUNCTIONALITY
+$(document).ready(function(){
+
+    $('body').css('position','relative');
+    var backToTop = $('#climb-to-top');
+    var speed = 500;
+    var affixInit = false;
+    $('#myAffix').affix({
+        offset: {
+            top: 0,
+            bottom: function () {
+                return 924;
+            }
+        }        
+    });
+    
+    //User scrolling
+    $(window).scroll(function(){
+        windowTop = $(window).scrollTop();
+
+        //Persist even on mobile devices
+        if (windowTop >= 368){
+            backToTop.fadeIn(speed);
+        }else{
+            backToTop.fadeOut(speed);
+        }
+    });
+window.U = window.U || {};
+(function() {
+    var current = 'big';
+    var fadedLayer = $('.faded-layer');
+    var menuDelay = 200; //Delay for menu animations
+	var delay = 300;
+	var open = false;
+	var scrollSpot = 50;
+	var $headerEl = $('header .header');
+
+	var header = {
+		$preHeaderEl: $('.preheader'),
+		$logoEl: $headerEl.find('.logo'),
+		$logoImageEl: $headerEl.find('.logo img'),
+		$ulEl: $headerEl.find('ul'),
+		$liEl: $headerEl.find('li'),
+		$aEl: $headerEl.find('ul li a'),
+		$contactLinkEl: $headerEl.find('.contact-link'),
+		$loginEl: $headerEl.find('.login'),
+		$signupEl: $headerEl.find('.signup'),
+
+		//Collapsed nav bar
+		smallHeader: function(delay) {
+
+			//General
+			$headerEl.animate({height: '52px'}, delay);
+			header.$preHeaderEl.slideUp(delay);
+
+			//Logo
+			header.$logoEl.animate({marginRight: 27, width: '92px'}, delay);
+			header.$logoImageEl.animate({top: 10}, delay);
+
+			//Navigation
+			header.$liEl.css({'font-size':'14px'});
+			header.$aEl.hover(function(){
+				$(this).css({'background-color':'rgba(249, 249, 249, 0.7)'});
+			}, function(){
+				$(this).css({'background-color':''});
+			});
+			header.$contactLinkEl.css({'display':'block'});
+			header.$liEl.animate({lineHeight: "49px"}, delay);
+
+			//Signup & Login
+			header.$loginEl.animate({padding: '4px 10px'}, delay);
+			header.$signupEl.animate({padding: '4px 10px'}, delay);
+		},
+
+		//Normal sized nav bar
+		bigHeader: function(delay) {
+
+			//General
+			$headerEl.animate({height: '69px'}, delay);
+			header.$preHeaderEl.slideDown(delay);
+
+			//Logo
+			if($(window).width() >= 1199){
+				header.$logoEl.animate({marginRight: 54, width: '140px'}, delay, '', function(){
+					header.$logoEl.css({'margin-right':''});
+				});
+			}else{
+				header.$logoEl.animate({marginRight: 27, width: '140px'}, delay, '', function(){
+					header.$logoEl.css({'margin-right':''});
+				});
+			}
+			header.$logoImageEl.animate({top: 15}, delay);
+
+			//Navigation
+			header.$liEl.css('font-size', '');
+			header.$aEl.hover(function(){
+				$(this).css({'background-color':''});
+			}, function(){
+				$(this).css({'background-color':''});
+			});
+			header.$contactLinkEl.css({'display':''});
+			header.$liEl.animate({lineHeight: "69px"}, delay);
+
+			//Signup & Login
+			header.$loginEl.animate({padding: '7px 15px'}, delay);
+			header.$signupEl.animate({padding: '7px 15px'}, delay);
+		},
+
+		//Resetting of the navbar into normal state, especially during window resizes
+		resetHeader: function() {
+			header.$logoEl.css({'margin-right': '', 'width': ''});
+			header.$loginEl.css({'padding': ''});
+			header.$signupEl.css({'padding': ''});
+			$headerEl.css({'height': ''});
+			header.$preHeaderEl.show();
+			header.$logoImageEl.css({'top': ''});
+			header.$liEl.css('font-size', '');
+			header.$aEl.hover(function(){
+				$(this).css({'background-color':''});
+			}, function(){
+				$(this).css({'background-color':''});
+			});
+			header.$liEl.css({'lineHeight': '69px'});
+		}
+	};
+
+	var delayResize = (function(){
+		var timer = 0;
+		return function(callback, ms){
+			clearTimeout (timer);
+			timer = setTimeout(callback, ms);
+		};
+	})();
+
+	U.smallHeader = header.smallHeader;
+	U.bigHeader = header.bigHeader;
+	U.resetHeader = header.resetHeader;
+	var $ulEl = $headerEl.find('ul');
+	var menuWrapEl = $('#menu-btn-wrap');
+	var $liLoginEl = $headerEl.find('li.menu-login');
+
+	$(window).scroll(function() {
+		if ($(window).scrollTop() > scrollSpot && current == 'big') {
+			if($(window).width() > 991) {
+				U.smallHeader(delay);
+				current = 'small';
+			}
+		} else if ($(window).scrollTop() <= scrollSpot && current == 'small') {
+			U.bigHeader(delay);
+			current = 'big';
+		}
+	});
+
+	//Readjust the header when a user resizes depending on the dimensions
+	$(window).resize(function(){
+		delayResize(function() {
+			if ($(window).width() <= 991) {
+				U.resetHeader();
+				current = 'big';
+			}else{
+				closeMenu();
+			}
+		}, 100);
+	});
+
+	//Open/close menu
+	menuWrapEl.click(function(){
+		toggleMenu();
+	});
+
+	//Close menu if outside of the menu area is clicked
+	fadedLayer.click(function(){
+		closeMenu();
+	});
+
+	//Close menu if esc key is pressed
+	$(document).keyup(function(e) {
+		if (e.keyCode == 27){
+			closeMenu();
+		}
+	});
+
+	//Toggle mobile menu on/off
+	function toggleMenu(){
+		menuWrapEl.find('#menu-btn').toggleClass('open');
+		fadedLayer.toggle();
+
+		if(open == false){
+			$ulEl.toggle();
+			menuWrapEl.css({'border-right':'1px solid #e7e7e7', 'border-bottom':'1px solid #fff'});
+			$liLoginEl.css({'left':'0'});
+			$ulEl.animate({left: 0}, menuDelay);
+			open = true;
+		}else{
+			menuWrapEl.css({'border-right':'', 'border-bottom':''});
+			$liLoginEl.css({'left':''});
+			$ulEl.animate({left: -250}, menuDelay, '', function(){
+				$ulEl.toggle();
+			});
+			open = false;
+		}
+	}
+
+	//Reset the menu to closed state
+	function closeMenu(){
+		//header.$contactLinkEl.css({'display':''});
+		menuWrapEl.find('#menu-btn').removeClass('open'); //reset menu morph icon
+		menuWrapEl.css({'border-right':''});
+		menuWrapEl.css({'border-bottom':''});
+		$ulEl.css({'left': '', 'display':''});
+		fadedLayer.hide();
+		open = false;
+	}
+})();
+
+//BACK TO TOP FUNCTIONALITY
+$(document).ready(function(){
+
+    $('body').css('position','relative');
+    var backToTop = $('#climb-to-top');
+    var speed = 500;
+    var affixInit = false;
+    $('#myAffix').affix({
+        offset: {
+            top: 0,
+            bottom: function () {
+                return 924;
+            }
+        }        
+    });
+    
+    //User scrolling
+    $(window).scroll(function(){
+        windowTop = $(window).scrollTop();
+
+        //Persist even on mobile devices
+        if (windowTop >= 368){
+            backToTop.fadeIn(speed);
+        }else{
+            backToTop.fadeOut(speed);
+        }
+    });
+
+    //User window resize
+    $(window).resize(function(){
+        windowTop = $(window).scrollTop();
+        
+        if (windowTop >= 368) {
+            backToTop.fadeIn(speed);            
+        } 
+        else{
+            backToTop.fadeOut(speed);
+        }
+        
+        if(windowTop >= 1040 ){            
+            $(window).trigger('resize');
+        }
+    });
+    
+    //When the button is clicked it takes the viewer to the top of the page
+    $('#climb-to-top a').click(function(){ 
+        $("html, body").animate({ scrollTop: 0 }, 500); 
+        return false; 
+    }); 
+       
+    setTimeout(function() { $("#myAffix").affix('checkPosition'); }, 100);
+});<footer class="footer">
+    <div class="container-fluid">
+        <div class="row-fluid">
+			<div class="span12">
+				<div class="top-holder">
+					<img src="https://pas-liveplan.s3.amazonaws.com/2015_liveplan_site/footer/footer_logo.png" alt="LivePlan Logo" title="LivePlan Logo" class="img-responsive logo">
+                    <ul class="social-icons">
+                        <li>
+                            <a href="https://twitter.com/liveplan">
+                                <img src="https://pas-webdev.s3.amazonaws.com/liveplan.com/social_icons/twitter_17.png" alt="Twitter Logo" title="Twitter Logo" class="img-responsive">                                
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://plus.google.com/u/0/+Liveplan88/">
+                                <img src="https://pas-webdev.s3.amazonaws.com/liveplan.com/social_icons/googleplus_17.png" alt="Google Plus Logo" title="Google Plus Logo" class="img-responsive">
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.linkedin.com/company/liveplan">
+                                <img src="https://pas-webdev.s3.amazonaws.com/liveplan.com/social_icons/linkedin_17.png" alt="LinkedIn Logo" title="LinkedIn Logo" class="img-responsive">                                
+                            </a>
+                        </li>
+                    </ul>
+				</div>
+				<ul class="main-links">
+					<li><a href="https://www.liveplan.com/features">Features</a></li>
+					<li><a href="https://www.liveplan.com/how-it-works.php">How It Works</a></li>
+					<li><a href="https://www.liveplan.com/pricing/">Pricing</a></li>
+					<li><a href="https://www.liveplan.com/customers/">Customers</a></li>
+					<li><a href="https://www.liveplan.com/blog">Blog</a></li>
+				</ul>
+			</div>
+		</div> 
+		<div class="row-fluid"> 
+			<div class="span6">
+				<h3>Modern, Simplified Business Planning</h3>
+				<p>LivePlan simplifies business planning, budgeting, forecasting, and performance tracking for small businesses and startups.  Set business goals, compare performance to industry benchmarks, and see all your key numbers in an easy-to-use dashboard so you know exactly what's going on in your business.</p>
+				<a target="_blank" href="https://www.mcafeesecure.com/verify?host=app.liveplan.com">
+					<img class="mfes-trustmark img-margin" src="https://pas-liveplan.s3.amazonaws.com/2015_liveplan_site/footer/footer_McAfee.png" title="McAfee SECURE sites help keep you safe from identity theft, credit card fraud, spyware, spam, viruses and online scams" alt="McAfee SECURE sites help keep you safe from identity theft, credit card fraud, spyware, spam, viruses and online scams" oncontextmenu="alert('Copying Prohibited by Law - McAfee Secure is a Trademark of McAfee, Inc.'); return false;">
+				</a>
+				<a target="_blank" href="https://www.shopperapproved.com/reviews/liveplan.com/">
+					<img src="https://pas-liveplan.s3.amazonaws.com/2015_liveplan_site/footer/footer_ShopperApproved.png" title="Read LivePlan reviews and ratings from actual paying customers" alt="Read LivePlan reviews and ratings from actual paying customers">
+				</a>
+			</div>
+			<div class="span3">
+				<ul>
+					<h3>About Us</h3>
+					<li><a href="https://www.liveplan.com/about_us/">Who We Are</a></li>
+					<li><a href="https://www.liveplan.com/blog/">Blog</a></li>
+                    <li><a href="https://www.strategicadvisor.liveplan.com/blog/">Strategic Advisor Blog</a></li>
+					<li><a href="http://www.paloalto.com/about-us/media-relations/">Media Relations</a></li>
+					<li><a href="http://www.paloalto.com/about-us/careers/">Careers</a></li>
+					<li><a href="https://www.liveplan.com/contact_us/">Contact Us</a></li>
+					<li><a href="https://www.liveplan.com/privacy/">Privacy and Confidentiality</a></li>
+				</ul>
+				<ul>
+					<h3>Solutions</h3>
+					<li><a href="https://www.liveplan.com/accountants/">For Accountants</a></li>
+					<li><a href="https://www.liveplan.com/consultants/">For Consultants</a></li>
+					<li><a href="https://www.liveplan.com/educators/">For Educators</a></li>
+				</ul>
+			</div>
+			<div class="span3">
+				<ul>
+					<h3>Product</h3>
+					<li><a href="https://www.liveplan.com/faq/">FAQs</a></li>
+					<li><a href="https://www.liveplan.com/reviews/">LivePlan Reviews</a></li>
+					<li><a href="https://www.liveplan.com/status/">App Status</a></li>
+					<li><a href="https://help.liveplan.com/">Help Center</a></li>
+					<li><a href="https://www.liveplan.com/blog/category/product-updates/">What's New</a></li>
+					<li><a href="https://www.liveplan.com/mac-business-plan-software/">Business Planning Software for Mac</a></li>
+				</ul>
+				<ul>
+					<h3>Find An Expert</h3>
+					<li><a href="https://www.liveplan.com/advisors/">Expert Advisors</a></li>
+					<li><a href="https://www.liveplan.com/business-plan-consulting/">Business Plan Writers</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</footer> 
+<div class="footer-bottom">
+	<div class="container-fluid">
+		<div class="row-fluid clear">
+			<div class="span9 left">
+				<p>&copy; 2010–2016 Palo Alto Software. All Rights Reserved</p>
+			</div>
+			<div class="span3 right">
+				<img src="https://pas-liveplan.s3.amazonaws.com/2015_liveplan_site/footer/palo-logo.png" alt="Palo Alto Software Logo" title="Palo Alto Software Logo" class="img-responsive">
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript" src='{{ get_public_template_url("hubspot_default/shared/responsive/hubtheme-main.js") }}'></script>
+<script type="text/javascript" src='{{ get_public_template_url("hubspot_default/shared/responsive/theme-foundation-v1-0.js") }}'></script>
+    //User window resize
+    $(window).resize(function(){
+        windowTop = $(window).scrollTop();
+        
+        if (windowTop >= 368) {
+            backToTop.fadeIn(speed);            
+        } 
+        else{
+            backToTop.fadeOut(speed);
+        }
+        
+        if(windowTop >= 1040 ){            
+            $(window).trigger('resize');
+        }
+    });
+    
+    //When the button is clicked it takes the viewer to the top of the page
+    $('#climb-to-top a').click(function(){ 
+        $("html, body").animate({ scrollTop: 0 }, 500); 
+        return false; 
+    }); 
+       
+    setTimeout(function() { $("#myAffix").affix('checkPosition'); }, 100);
+});
